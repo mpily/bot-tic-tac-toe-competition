@@ -1,3 +1,5 @@
+import os
+
 #checking if the person has only played one move and has not ovewritten another player
 def validMove(previous, current):
   differences = 0
@@ -11,7 +13,7 @@ def validMove(previous, current):
        if previous[i][j] != current[i][j] and previous[i][j] != '0':
          return False
   return True
-  
+
 #checking if there is a horizontal group that wins
 def checkHorizontal(board, required):
   for row in board:
@@ -77,44 +79,81 @@ def checkReverseDiagonals(Board, required):
           if len(temp) == required:
             return temp[-1]
   return '0'
- 
+def checkFullBoard(Board):
+  for a in Board:
+    for b in a:
+      if b == '0':
+        return True
+  return False
+
 def main():
-  a = ["oxx","o00","xo0"]
-  b = ["oxx","ox0","xo0"]
-  if validMove(a,b):
-    print("YES BANAr!")
-    temp = checkHorizontal(b,3)
-    if temp == '0':
-      temp = checkVertical(b,3)
-      if temp == '0':
-        temp = checkLeadingDiagonals(b,3)
-        if temp == '0':
-          temp = checkReverseDiagonals(b,3)
-          if temp !='0':
-            print(temp)
-        else:
-          print (temp)
-      else:
-        print (temp)
+  prevboard = []
+  board = []
+  stringrep = ''
+  width = 7
+  towin = 4
+  for i in range (0,width):
+    nrow = ''
+    for j in range(0,width):
+      nrow = nrow + '0'
+    stringrep = stringrep +nrow
+    board.append(nrow)
+    prevboard.append(nrow)
+
+  f = open('playingground.txt','w+')
+  f.write(stringrep)
+  f.close()
+  com1 = './p1 '+str(width)+' '+str(towin)+' '+stringrep+' x > playingground.txt'
+  com2 = './p2 '+str(width)+' '+str(towin)+' '+stringrep+' o > playingground.txt'
+  winner = '0'
+  position = 0
+  while winner == '0' and checkFullBoard(board):
+    f = open ('playingground.txt','r')
+    stringrep = f.read()
+    f.close()
+    tempboard = ''
+    pi = 0
+    pos = 0
+    print(len(stringrep))
+    for elem in stringrep:
+      print(pi)
+      pi+=1
+      tempboard = str(tempboard) + str(elem)
+      if len(tempboard) == width:
+        print (len(tempboard))
+        board[pos] = tempboard
+        pos+=1
+        print(pos)
+        tempboard = ''
+
+    if validMove(prevboard,board):
+      prevboard = board
+      winner = checkVertical(board,towin)
+      if(winner != '0'):
+        break
+      winner = checkHorizontal(board,towin)
+      if(winner != '0'):
+        break
+      winner = checkLeadingDiagonals(board,towin)
+      if(winner != '0'):
+        break
+      winner = checkReverseDiagonals(board,towin)
+      if(winner != '0'):
+        break
+    if position == 0:
+      com1 = './p1 '+str(width)+' '+str(towin)+' '+stringrep+' x > playingground.txt'
+      os.system(com1)
+      position = 1
     else:
-      print(temp)
-  else :
-    print ("NO BANAR")
+      com1 = './p1 '+str(width)+' '+str(towin)+' '+stringrep+' o > playingground.txt'
+      os.system(com1)
+      position = 0
 
 
-main()
+  print("The winner is "+winner)
+  for line in board:
+    print (line)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == '__main__':
+  main()
